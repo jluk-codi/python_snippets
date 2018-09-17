@@ -1,4 +1,23 @@
+#######
+# Print function support in Python 2.x
+#######
+
 from __future__ import print_function
+
+##########
+# Read config from YAML file
+##########
+
+import yaml
+config = {}
+config_path = 'config.yaml'
+try:
+    with open(config_path, 'r') as config_file:
+        config = yaml.load(config_file)
+except IOError:
+    print('Error reading config from', config_path)
+print(config)
+
 
 ###############
 # CLI args
@@ -17,10 +36,12 @@ args = parser.parse_args()
 
 import logging
 
+log = logging.getLogger('myname')
+
 def set_logging(args):
     log_filename = '/var/log/artifact_curator.log'
 
-    logger.setLevel(logging.DEBUG)
+    log.setLevel(logging.DEBUG)
 
     fh = logging.FileHandler(log_filename)
     fh.setLevel(logging.INFO)
@@ -35,6 +56,18 @@ def set_logging(args):
     console.setLevel(log_level)
     console.setFormatter(formatter)
 
-    logger.addHandler(console)
+    log.addHandler(console)
     if log_level is not logging.DEBUG:
-        logger.addHandler(fh)
+        log.addHandler(fh)
+
+###########################
+# JSON safe pretty dump
+###########################
+
+import json
+
+class SafeObjectEncoder(json.JSONEncoder):
+    default = lambda self, obj: str(obj)
+
+def pretty_json(obj):
+    json.dumps(obj, cls=SafeObjectEncoder, indent=4)
